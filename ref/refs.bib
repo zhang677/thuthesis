@@ -592,3 +592,21 @@ pages = {75},
 location = {Palo Alto, California},
 series = {CGO '04}
 }
+
+@inproceedings{SAM,
+author = {Hsu, Olivia and Strange, Maxwell and Sharma, Ritvik and Won, Jaeyeon and Olukotun, Kunle and Emer, Joel S. and Horowitz, Mark A. and Kj\o{}lstad, Fredrik},
+title = {The Sparse Abstract Machine},
+year = {2023},
+isbn = {9781450399180},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3582016.3582051},
+doi = {10.1145/3582016.3582051},
+abstract = {We propose the Sparse Abstract Machine (SAM), an abstract machine model for targeting sparse tensor algebra to reconfigurable and fixed-function spatial dataflow accelerators. SAM defines a streaming dataflow abstraction with sparse primitives that encompass a large space of scheduled tensor algebra expressions. SAM dataflow graphs naturally separate tensor formats from algorithms and are expressive enough to incorporate arbitrary iteration orderings and many hardware-specific optimizations. We also present Custard, a compiler from a high-level language to SAM that demonstrates SAM's usefulness as an intermediate representation. We automatically bind from SAM to a streaming dataflow simulator. We evaluate the generality and extensibility of SAM, explore the performance space of sparse tensor algebra optimizations using SAM, and show SAM's ability to represent dataflow hardware.},
+booktitle = {Proceedings of the 28th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 3},
+pages = {710--726},
+numpages = {17},
+keywords = {streams, abstract machine, domain-specific, sparse tensor algebra},
+location = {Vancouver, BC, Canada},
+series = {ASPLOS 2023}
+}
