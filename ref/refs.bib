@@ -243,7 +243,62 @@ location = {Phoenix, AZ, USA},
 series = {MAPL 2019}
 }
 
+@incollection{coalesce,
+title = {Chapter 4 - Memory and data locality},
+editor = {David B. Kirk and Wen-mei W. Hwu},
+booktitle = {Programming Massively Parallel Processors (Third Edition)},
+publisher = {Morgan Kaufmann},
+edition = {Third Edition},
+pages = {71-101},
+year = {2017},
+isbn = {978-0-12-811986-0},
+doi = {https://doi.org/10.1016/B978-0-12-811986-0.00004-2},
+url = {https://www.sciencedirect.com/science/article/pii/B9780128119860000042},
+author = {David B. Kirk and Wen-mei W. Hwu},
+keywords = {Memory bandwidth, memory-bound, on-chip memory, tiling, strip-mining, shared memory, private memory, scope, lifetime, occupancy}
+}
+
 @inproceedings{double-buffer,
+ author = {Xing, Jiarong and Wang, Leyuan and Zhang, Shang and Chen, Jack and Chen, Ang and Zhu, Yibo},
+ booktitle = {Proceedings of Machine Learning and Systems},
+ editor = {D. Marculescu and Y. Chi and C. Wu},
+ pages = {204--216},
+ title = {Bolt: Bridging the Gap between Auto-tuners and Hardware-native Performance},
+ url = {https://proceedings.mlsys.org/paper_files/paper/2022/file/38b3eff8baf56627478ec76a704e9b52-Paper.pdf},
+ volume = {4},
+ year = {2022}
+}
+
+@inproceedings{CoRA,
+ author = {Fegade, Pratik and Chen, Tianqi and Gibbons, Phillip and Mowry, Todd},
+ booktitle = {Proceedings of Machine Learning and Systems},
+ editor = {D. Marculescu and Y. Chi and C. Wu},
+ pages = {721--747},
+ title = {The CoRa Tensor Compiler: Compilation for Ragged Tensors with Minimal Padding},
+ url = {https://proceedings.mlsys.org/paper_files/paper/2022/file/d3d9446802a44259755d38e6d163e820-Paper.pdf},
+ volume = {4},
+ year = {2022}
+}
+
+@inproceedings{SparseTIR,
+author = {Ye, Zihao and Lai, Ruihang and Shao, Junru and Chen, Tianqi and Ceze, Luis},
+title = {SparseTIR: Composable Abstractions for Sparse Compilation in Deep Learning},
+year = {2023},
+isbn = {9781450399180},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3582016.3582047},
+doi = {10.1145/3582016.3582047},
+abstract = {Sparse tensors are rapidly becoming critical components of modern deep learning workloads. However, developing high-performance sparse operators can be difficult and tedious, and existing vendor libraries cannot satisfy the escalating demands from new operators. Sparse tensor compilers simplify the development of operators, but efficient sparse compilation for deep learning remains challenging because a single sparse format cannot maximize hardware efficiency, and single-shot compilers cannot keep up with latest hardware and system advances. In this paper, we observe that the key to addressing both these challenges is to leverage composable formats and composable transformations. We propose SparseTIR, a sparse tensor compilation abstraction that offers composable formats and composable transformations for deep learning workloads. SparseTIR constructs a search space over these composable components for performance tuning. With these improvements, SparseTIR obtains consistent performance speedups vs vendor libraries on GPUs for single operators: 1.20-2.34x for GNN operators, 1.05-2.98x for sparse attention operators, and 0.56-7.45x for sparse convolution operators. SparseTIR also accelerates end-to-end GNNs by 1.08-1.52x for GraphSAGE training, and 4.20-40.18x for RGCN inference.},
+booktitle = {Proceedings of the 28th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 3},
+pages = {660–678},
+numpages = {19},
+keywords = {Sparse Computation, Tensor Compilers, Tensor Cores, Code Generation and Optimizations, Vectorization, Kernel Fusion, Scheduling},
+location = {Vancouver, BC, Canada},
+series = {ASPLOS 2023}
+}
+
+@inproceedings{mlir-tc,
 author = {Katel, Navdeep and Khandelwal, Vivek and Bondhugula, Uday},
 title = {MLIR-Based Code Generation for GPU Tensor Cores},
 year = {2022},
