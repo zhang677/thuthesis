@@ -1,6 +1,88 @@
 % !TeX root = ../thuthesis-example.tex
 
-\chapter{图表示例}
+\chapter{背景介绍}
+
+\section{稀疏张量代数}
+稀疏张量代数（Sparse Tensor Algebra）是指作用在存在大量零元的张量上的张量代数。与稠密张量代数不同，因为稀疏张量中仅有少量非零元，所以一般按照压缩格式存储，比如DCSR\cite{DCSR}，CSB\cite{CSB}，DIA\cite{DIA}，CSF\cite{CSF}等。
+稀疏张量代数有广泛应用。比如在机器学习中，图神经网络\cite{kipf2016semi, hamilton2017inductive}中核心算子为稀疏稠密矩阵乘法和采样稠密矩阵乘法，稀疏卷积神经网络中权重、激活等剪枝后也会出现稀疏张量运算\cite{liu2015sparse}。
+在数据分析和高性能计算中，会运用稀疏张量低秩分解\cite{kolda2009tensor}和稀疏矩阵稠密向量乘法\cite{bell2012exposing}等稀疏张量代数。图~\ref{fig:sparse-intro}展示了稀疏矩阵的例子，以及两种压缩存储格式。
+\begin{figure}
+  \centering
+  \includegraphics[width=0.99\linewidth]{稀疏矩阵示意图.pdf}
+  \caption*{（a）稀疏矩阵；（b）稀疏矩阵压缩稀疏行（CSR）存储格式，由三个数组组成。行范围数组中第$i+1$个元素和第$i$个元素的差值代表第$i$行中非零元个数，列序号数组中第$i$个元素代表第$i$个非零元的列序号，非零值数组中第$i$个元素代表第$i$个非零元的值；
+  （c）稀疏矩阵压缩坐标（COO）存储格式，由三个数组组成。行序号数组中第$i$个元素代表第$i$个非零元的行序号，列序号数组中第$i$个元素代表第$i$个非零元的列序号，非零值数组中第$i$个元素代表第$i$个非零元的值。}
+  \caption{稀疏矩阵示例}
+  \label{fig:sparse-intro}
+\end{figure}
+
+\section{稀疏稠密混合代数}
+\subsection{定义}
+稀疏稠密混合代数是一种稀疏张量代数，它有两种等价的表示形式：一种是张量形式（Tensor formulation，简称TF）如公式\eqref{eq:algebra-view}所示，另一种是数据库形式（Database formulation，简称DF）如公式\eqref{eq:db-view}所示。
+在公式\eqref{eq:algebra-view}中，$\symbf{Y}$是输出张量，$\symbf{X^j}$是稠密输入张量，$symbf{A}$是稀疏输入张量。$symbf{A}$是稀疏的意味着至少有一个维度$a_i$是以压缩格式存储的。$y_1, y_2,\cdots,y_M$,$a_1, a_2,\cdots,a_N$,$x_1^j,x_2^j,\cdots,x_{M^j}^j$是属于相同的下标变量集合。$M$是输出张量的维度，$N$是输入稀疏张量的维度，$D$是输入稠密张量的个数，$M^j$是输入稠密张量$\symbf{X^j}$的维度。
+在公式\eqref{eq:db-view}中我们使用信息传播描述描述稀疏稠密混合代数。$Q,Q_0,Q_1,Q_2$是向关联数据库的查询。
+我们遵循经典的逻辑-物理分离存储思想\cite{codd1970relational}。$D$是$Q$的关联数据库，
+按照$id$升序存储$(id, value)$，其中$id\in \mathbb{Z}$，$value \in \mathbb{R}^n$。$dst\in K$是任何可以哈希的键值，$f$是$K\rightarrow \mathbb{Z}$的映射。
+$Q(k)$的值定义为$Q(dst)=D(f(dst))$。$\oplus$可以是任何满足交换律的算符，$\otimes$可以是任何可以接受两个对象作为输入，输出一个可被$\oplus$运算的对象。
+$\oplus$的结果会被写入$Q$中的$f(dst)$位置。在DF视角下，稀疏稠密混合代数的稀疏性体现在对于所有$dst$，$Q_0(dst)$是分散的。换句话说，$Q_0(i) \bigcap Q_0(i+1) \sim \O$。
+该代数的稠密性体现在$D,D_1,D_2$中的值可以是标量，稠密向量或稠密矩阵。
+\begin{equation}
+  \symbf{Y}_{y_1, y_2,\cdots,y_M} = \symbf{A}_{a_1, a_2,\cdots,a_N}\prod_{i=1}^{D}\symbf{X}^{j}_{x_1^j,x_2^j,\cdot,x_{M^j}^j}
+  \label{eq:algebra-view}
+\end{equation}
+\begin{equation}
+  Q(dst)=\oplus_{src\in Q_0(dst)}\{src, \otimes(Q_1(src,dst), Q_2(dst))\}
+  \label{eq:db-view}
+\end{equation}
+在TF下，稀疏稠密混合代数特征是输入既有稀疏又有稠密张量。例如，矩阵化张量乘Khatri-Rao积MTTKRP（Matricized Tensor Times Khatri Rao Product\cite{nisa2019mttkrp}，采样稠密矩阵乘法SDDMM（Sampled Dense-Dense Matrix Multiplication）\cite{yu2021exploiting}，
+稀疏稠密矩阵乘法SpMM（Sparse Matrix-Matrix Multiplication）\cite{huang2020ge}和张量矩阵乘TTM（Tensor Times Matrix Product）\cite{kurt2022ttm}。在TF下，MTTKRP，TTM，SDDMM和SpMM四类算子可以表示为公式\eqref{eq:four-expressions}
+\begin{subequations}
+  \begin{equation}
+      \symbf{Y}_{i,j} = \symbf{A}_{i,k,l}\symbf{X}_{k,j}^1\symbf{X}_{l,j}^2
+  \end{equation}
+  \begin{equation}
+      \symbf{Y}_{i,j,l} = \symbf{A}_{i,j,k}\symbf{X}_{k,l}^1
+  \end{equation}
+  \begin{equation}
+      \symbf{Y}_{i,k} = \symbf{A}_{i,k}\symbf{X}_{i,j}^1\symbf{X}_{j,k}^2
+  \end{equation}
+  \begin{equation}
+      \symbf{Y}_{i,k} = \symbf{A}_{i,j}\symbf{X}_{j,k}^1
+  \end{equation}
+  \label{eq:four-expressions}
+\end{subequations}
+\subsection{规约}
+稀疏稠密混合代数的核心操作是规约。这一个核心观察启发我们针对规约做优化，因为我们只需要加速这一个核心操作，然后通过编译器技术来自动加速不同的稀疏稠密混合代数。
+例如在TF视角下，公式\eqref{eq:algebra-view}算子在MTTKRP的$l,k$维度做规约，TTM在$k$维度，SDDMM在$j$维度，SpMM在$j$维度做规约。规约可以再一个稀疏和一个稠密维度之间进行，比如MTTKRP，TTM和SpMM。
+规约也可以在两个稠密维度做，比如SDDMM。图~\ref{fig:kernels}展示了这四种算子的规约维度。我们也在图~\ref{fig:four-code}中给出了规约的具体代码例子。例如，MTTKRP包含两个规约，每个规约都和SpMM中的
+规约动作一致。这样的性质也可以在DF视角下观察到。 如图~\ref{fig:redb-spmm}和图~\ref{fig:redb-mttkrp}，对于MTTKRP和SpMM的第一个规约，$D_1$的值都是标量，$D_2$的值都是向量。对于MTTKRP的第二个规约，尽管$D_1$的值是一个向量，这一点和SpMM不同，
+但是$\oplus$行为一致，因为$\otimes$执行的是向量的逐元素乘法。
+\begin{figure}[h]%
+  \centering
+  \includegraphics[width=0.99\textwidth]{kernels.pdf}
+  \caption{TF视角下稀疏稠密混合代数示例，连续的灰色平行四边形或正方形代表规约维度}
+  \label{fig:kernels}
+\end{figure}
+\begin{figure}[h]%
+  \centering
+  \includegraphics[width=0.99\textwidth]{SpHY.pdf}
+  \caption{TF视角下稀疏稠密混合代数规约的代码示例。黄色的和绿色的代码行是规约代码。MTTKRP有两个层次的归于，分别用黄色和绿色表示。重叠部分代表第一个层级的规约输出是第二个层级规约的输入。对于A的存储我们遵循\cite{kjolstad:2020:phd-thesis}的命名规则}
+  \label{fig:four-code}
+\end{figure}
+\begin{figure}[h]%
+  \centering
+  \includegraphics[width=0.99\textwidth]{reduction-db-spmm.pdf}
+  \caption{SpMM规约操作示意图，下方展示了该算子在TF和DF视角下等效的表达}
+  \label{fig:redb-spmm}
+\end{figure}
+\begin{figure}[h]%
+  \centering
+  \includegraphics[width=0.99\textwidth]{reduction-db-mttkrp.pdf}
+  \caption{MTTKRP规约操作示意图，下方展示了该算子在TF和DF视角下等效的表达}
+  \label{fig:redb-mttkrp}
+\end{figure}
+
+\section{稀疏稠密张量代数GPU优化技术}
+如上节所述，规约是稀疏稠密混合张量代数的核心操作，不同算子之间会共享同类型的规约。因此，在
 
 \section{插图}
 
