@@ -81,8 +81,36 @@ $\oplus$的结果会被写入$Q$中的$f(dst)$位置。在DF视角下，稀疏�
   \label{fig:redb-mttkrp}
 \end{figure}
 
-\section{稀疏稠密张量代数GPU优化技术}
-如上节所述，规约是稀疏稠密混合张量代数的核心操作，不同算子之间会共享同类型的规约。因此，在
+\section{稀疏稠密张量代数GPU优化技术}\label{sec:spmmopt}
+如上节所述，规约是稀疏稠密混合张量代数的核心操作，不同算子之间会共享同类型的规约。因此，不失一般性，我们介绍SpMM在GPU上的算子优化技术。
+这些优化技术经过简单扩展就可以应用到其他的稀疏稠密混合代数算子中。Yang等人\cite{yang2018design}通过动态选择两个算法来实现在不同并行处理器中非零元个数的平均分配，和不同线程之间的行平均分配。自适应稀疏切分（ASpT）\cite{hong2019adaptive}通过非零元位置重排实现更好的数据局部性，因此降低了向全局内存的访问次数。
+Ge-SpMM\cite{huang2020ge}提出了协调行快取技术（Coalesced Row Caching）来实现向稀疏和稠密矩阵的协调内存访问。同时提出了粗粒度线程组合并技术（Coarse-grained Warp Merging）去合并SpMM在不同线程组的工作负载，并实现更好的稀疏矩阵数据复用。Mehrabi等人\cite{mehrabi2021learning}提出了针对CSR格式的行交换技术来实现更好的工作负载均衡和数据局部性。
+DA-SpMM\cite{dai2022heuristic}提出了SpMM的三个设计维度，分别是行/非零元均衡、行/列起始循环，并行/串行规约，并基于机器学习算法设计了自动算子选择器。
+
+\section{稀疏算子编译器}
+优化稀疏张量代数有四个维度的复杂度：数据格式、代数表达、优化技巧和硬件平台。如前所述，常见数据格式有CSR，CSF，COO，DIA，DCSR，CSB，CSC等，不仅如此，用户还可以根据问题自定义数据格式。
+代数表达方面，除了已经列举的SpMM，SDDMM，MTTKRP，TTM等还有更多用爱因斯坦和\cite{einsteinsum}形式表达的张量运算。优化技巧方面，在~\ref{sec:spmmopt}节中我们列举了SpMM的常见优化技巧，
+针对其他稀疏算子也会有各自的优化技巧。硬件平台除了CPU，GPU，还会有FPGA和其他的领域专用电路（ASIC）等。通常研究者们会针对一个数据格式、一种张量计算和一个硬件平台开发一系列优化算法。这种研究方式
+我们称之为算子模式。算子模式严重依赖于领域专家和大量的工程工作\cite{wang2014mkl,naumov2010cusparse,guennebaud2010eigen}。
+
+但是，稀疏算子编译器有望解决这一问题。它可以降低工程量，并加速这一领域的创新。与算子库模式不同，稀疏算子编译器的目标是用一个整体的编译理论来表述所有数据格式和计算表达，以计算图变换方式表达常用的优化技术，同时希望提出一个灵活的用户接口，这个接口可以让用户针对给定输入数据和硬件平台探索优化空间。稀疏算子编译器的研究可以分为两类。
+一类是作为编译器变换步骤。这一类方法会在编译器在高层次语言代码到底层语言代码变换过程中添加稀疏计算相关优化技术的变换。这一类代表工作有Bik和Wijshoff向类FORTRAN语言中添加的编译期数据格式选择技术\cite{bik1993compilation}，Venkat等人基于Inspector-Executor模式设计的循环稠密化代码变换技术，以及Strout等人基于多边体模型\cite{polyhedral}提出的稀疏多边体模型\cite{strout2018sparse}。
+另一类是作为领域专用语言。这一类方法针对稀疏张量计算设计了专用的高级语言，和从高级语言到底层语言的变换及调度算法\cite{SparseTIR,kjolstad:2020:phd-thesis,bik2022compiler}。特别地，TACO\cite{kjolstad:2017:taco,kjolstad:2019:workspaces,kjolstad:2020:phd-thesis,senanayake:2020:scheduling}针对第二类技术提出了基础算法。据我们所知，它是第一个提出实用稀疏编译理论的工作。MLIR的稀疏方言\cite{bik2022compiler}利用MLIR部署了TACO的稀疏编译理论。SparseTIR\cite{SparseTIR}提出了数据格式融合和混合调度调度策略，但是
+它也使用了TACO提出的基础概念，诸如坐标空间和位置空间。同时，TACO还启发了针对稀疏张量代数运算的专用加速器设计\cite{qin2022HardTACO}。因此，我的工作也基于TACO的编译算法基础。TACO的整体工作流如图~\ref{fig:tacoworkflow}所示。下面，我将以前端、中端、后端的顺序介绍。
+\begin{figure}[h]%
+  \centering
+  \includegraphics[width=0.9\textwidth]{workflow.pdf}
+  \caption{Overview of the TACO workflow}\label{fig:tacoworkflow}
+\end{figure}
+\subsection{前端}
+在前端，稀疏张量表达式被具体化为具象角标表示（Concrete Index Notation，简称CIN）\cite{kjolstad:2019:workspaces}。CIN是一种描述稀疏张量运算执行过程的语言。与爱因斯坦和形式表达的张量运算不同，CIN描述了循环、角标变量之间的关系、转移空间、硬件平台等信息。CIN通过调度指令控制变换。例如一个precompute指令会向CIN中添加where语句。尽管TACO提供了一个简明且有分块、调整循环变量顺序等功能的调度接口来控制CIN变换，但这一调度接口的完备性和有效性还未得到证明\cite{ahrens:2022:autoscheduling}。因此，用户仍然需要直接更改CIN。
+TACO中提供了可以接收lambda表达式的匹配函数。这一函数可以更改CIN当它在CIN中寻找到了指定类型的CIN节点或者指定的CIN节点组合模式。不仅如此，TACO还可以通过重载角标表示重写类来直接针对部分CIN进行重写。这个设计帮助我实现在编译器中部署灵活规约扩展。
+\subsection{中端}
+在中端，CIN会变换成低层次中间表示（Low Level Intermediate Representation，简称LLIR）。LLIR描述了基本算术操作，变量声明，函数调用等接近C++语言的功能，也包括许多基本块，比如for循环、while循环、if条件语句等。LLIR的下一层就是可执行的C++代码。中端的输出是LLIR序列。基于稀疏迭代理论\cite{kjolstad:2020:phd-thesis}提供的变换规则CIN被变换成LLIR。它保证了不同张量之间只会在可能产生非零输出的元素间循环，这样避免了多余的计算。这也是稀疏张量算子优化的基本原理。特别地，TACO针对CIN中的每一种语句设计了到LLIR的变换函数，同时假设了在稀疏张量的压缩维度上执行的规约是串行，而不是并行。
+我们在灵活规约的编译器扩展中会打破串行规约的假设。不仅如此，我们还将指出更灵活的甚至用户可定义的CIN到LLIR变换设计方法可以进一步提升稀疏张量编译器的优化效率。
+\subsection{后端}
+在后端，LLIR会被直接翻译成不同后端可执行的代码。这篇工作面向英伟达GPU的CUDA代码生成。当前TACO的CUDA代码生成后端有一些文章中没有阐释清楚的限制。TACO用嵌套循环的方式\cite{senanayake:2020:scheduling}将逻辑上串行的LLIR转化为针对单指令多线程（SIMT）的CUDA编程模式。同时，它假设有两层并行单元：线程和线程块，这两层并行单元都是一维的，而CUDA编程模式中并行单元是3维的。这样虽然简化了代码生成算法，却限制了并行编程的写法。当一个for循环LLIR的角标变量被绑定在GPU的线程块时，它会使用blockIdx.x来索引这个角标变量。而在生成CPU代码时，它会生成一个for循环。这样的变量会假设按照1累加。
+绑定在GPUWarp和GPUThread上的角标变量分别被假设是threadIdx.x的外部和内部循环变量。TACO默认利用了英伟达GPU中32个线程组成线程组（Warp），并按照线程组粒度调度指令的特性。分块的大小取决于GPUThread上的角标变量。值得注意的是，这里将GPUWarp分块和同步语义混合在了一起，这样导致损失了在GPU线程组维度的灵活调度优化机会。基于这个观察，我会在本工作中提出分块和同步分离的GPU线程组抽象，并辅助实现灵活规约在稀疏算子编译器的拓展。
 
 \section{插图}
 

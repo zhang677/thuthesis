@@ -5,7 +5,7 @@
   cite-style = super,
 }
 
-\section{算子编译器}
+\section{算子编译器产生动机}
 张量编译器指为高效张量计算设计的编译器\cite{halide,kjolstad:2017:taco}。常见的张量编译器输入为描述张量运算的高级语言。
 深度学习编译器\cite{tvm,rammer}的核心之一也是张量编译器，因为当前机器学习算法的核心算子为张量运算。常见深度学习编译器输入为神经网络计算图描述语言和参数文件。
 二者输出均为硬件平台特定低级语言。与张量编译器不同，深度学习编译器同时还包含计算图优化，算子融合等技术。因为二者技术类似，所以下面统称算子编译器。
@@ -15,7 +15,7 @@
 算子融合技术可以加速深度学习算法推理速度，最高可达10倍左右\cite{DNNFusion}。而算子库的功能在开发时就已确定，无法做细粒度的算子融合\cite{Graphene}。
 因此，有越来越多学者开始关注这一领域\cite{PET,Tiramisu,Checkmate}，硬件提供商也在积极研发算子编译器技术，比如英伟达的Triton\cite{Triton}，和华为的AKG\cite{AKG}。
 
-\section{算子编译器优化}
+\section{算子编译器优化技术}
 第一个问题：算子编译器能否表达手工算子优化的技术？硬件架构特性规定了所有可能的算子优化技术。以GPU为例，double-buffer技术基于GPU的shared memory-register file两层级存储架构\cite{double-buffer}；并行规约技术基于GPU的CUDA Core中线程同步架构\cite{parallel-reduction}；
 tiling技术基于DRAM的coalesce访存架构\cite{coalesce}；data-layout在寄存器中的排布要适应Tensor Core的指令特殊规定\cite{DynamicNM}。因此，如果算子编译器
 生成的算子想要逼近甚至超过算子库性能，算子编译器就需要可以表达尽可能多的手工算子优化技术。这是算子编译器的基本问题，因为如果无法表达算子优化技术，无论怎么微调参数都难以超过手工算子性能。

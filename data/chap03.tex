@@ -1,6 +1,57 @@
 % !TeX root = ../thuthesis-example.tex
 
-\chapter{数学符号和公式}
+\chapter{主要挑战和核心贡献}
+本章总结了稀疏算子编译器设计在优化空间扩展和编译算法设计两方面面临的主要挑战，同时介绍了本文对于解决这些挑战的核心贡献。
+\section{优化空间扩展}
+\subsection{主要挑战}
+虽然GPU提供了10TFLOP/s量级的并行计算能力，但是由于稀疏张量计算的不规则性，充分利用GPU的并行计算能力仍具有挑战性。表\ref{tab:motivation-1}展示了SDDMM\cite{yu2021exploiting}，SpMM\cite{huang2020ge}，MTTKRP\cite{nisa2019mttkrp}，其中每种算子均采用当前性能最高的开源库。
+\begin{table}
+  \centering
+  \caption{稀疏张量算子库性能和GPU峰值算力对比}
+  \begin{tabular}{llll}
+    \toprule
+    算子名  & 算子性能（TFLOP/s） & 平台峰值算力（TFLOP/s） & 与峰值算力差距倍数   \\
+    \midrule
+    SDDMM  & 0.42 & 15.7 & 37.4x \\
+    SpMM   & 0.28 & 10.6 & 37.9x \\
+    MTTKRP & 0.20 & 15.7 & 78.5x \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:motivation-1}
+\end{table}
+从表\ref{tab:motivation-1}中可以看出，最佳的开源稀疏张量算子库算子性能和平台峰值算力还有几十倍的差距，这说明计算平台的算力还没有被充分利用。因此主要挑战是如何进一步扩展优化空间，即写出更高效的稀疏张量算子。
+\subsection{核心贡献}
+本文提出了灵活规约，这是一种新的针对SIMT架构上稀疏稠密混合张量代数算子优化技术。该技术扩展了优化空间，进一步提升了算子库性能。实验表明，采用灵活规约同步后可以将SpMM算子库性能提升平均1.6至2.3倍（针对不同代GPU架构加速比有所不同）。
+\section{编译算法设计}
+除了算子性能较低，现在编写高性能稀疏算子库也较为困难。这里用代码行数来衡量编写算子库的难易程度。表\ref{tab:motivation-2}展示了SDDMM，SpMM，MTTKRP最佳算子库和稀疏张量编译器TACO的对比。其中算子库代码行数指编写GPU上执行的CUDA算子需要的代码行数（不包括CPU和GPU间数据搬移和算子调用的代码），算子编译器代码行数指运用TACO提供的调度变换指令编写算子所需要的代码行数。
+\begin{table}
+  \centering
+  \begin{threeparttable}[c]
+  \caption{稀疏张量算子库和算子编译器的性能和代码行数对比}
+  \label{tab:motivation-2}
+  \begin{tabular}{lllll}
+    \toprule
+    算子名  & 算子库 & 算子编译器 & 算子库与编译器 & 算子库与编译器   \\
+           & 代码行数 & 代码行数 & 代码行数比    & 算子性能比       \\
+    \midrule
+    SDDMM\tnote{a}  & 53 & 12 & 4.4x & 2.1x \\
+    SpMM\tnote{b}   & 132 & 13 & 10.2x & 2.6x \\
+    MTTKRP\tnote{c} & 40 & 12 & 3.3x & 1.2x \\
+    \bottomrule
+  \end{tabular}
+  \begin{tablenotes}
+    \item [a] 选取SOTA的GPU开源SDDMM算子库 PRedS \cite{yu2021exploiting}中的sddmm\_csr\_ebalance\_vec4函数和TACO中的scheduleSDDMMGPU函数做对比。
+    \item [b] 选取SOTA的GPU开源SpMM算子库 DASpMM \cite{dai2022heuristic}中的采用的四种算子：csrspmm\_rowcaching\_rowbalance\_kernel，
+      csrspmm\_rowcaching\_nnzbalance\_kernel，csrspmm\_parreduce\_rowbalance\_kernel和csrspmm\_parreduce\_nnzbalance\_kernel函数的平均行数和TACO中的scheduleSpMMGPU函数对比。
+    \item [c] 选取SOTA的GPU开源MTTKRP算子库MM-CSF\cite{nisa2019mttkrp}中采用HyB格式的3维MTTKRP函数的平均行数和TACO中的scheduleMTTKRPGPU函数对比。
+  \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+从表\ref{tab:motivation-2}中可以看出，利用编译器提供的领域专用语言可以减小3到10倍的代码量，但是会牺牲16\%到60\%的性能。性能下降说明编译器表达的优化空间没有包含已有算子库的优化技巧。
+因此，需要设计更好的编译算法，在进一步降低用户代码量的同时，扩展优化空间，从而使得用户可以用更低的开发难度得到更高性能的稀疏张量算子。
+\subsection{核心贡献}
+基于灵活规约，本文提出了细分线程组，这是一种新的针对SIMT架构上稀疏稠密混合张量代数的编译算法。该技术扩展了稀疏算子编译器表达的优化空间，同时在用户端只需要增加一行代码即可获得灵活规约带来的算子加速。
+实验表明，采用细分线程组后，编译器生成SpMM算子性能提升了平均1.2倍，最多提升3.8倍；编译器生成MTTKRP算子性能最多提升2.7倍。
 
 \section{数学符号}
 
