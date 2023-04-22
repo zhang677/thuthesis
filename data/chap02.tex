@@ -50,7 +50,7 @@ $\oplus$的结果会被写入$Q$中的$f(dst)$位置。在DF视角下，稀疏�
   \end{equation}
   \label{eq:four-expressions}
 \end{subequations}
-\subsection{规约}
+\subsection{规约}\label{sec:reduction-core}
 稀疏稠密混合代数的核心操作是规约。这一个核心观察启发本文针对规约做优化，因为本文只需要加速这一个核心操作，然后通过编译器技术来自动加速不同的稀疏稠密混合代数。
 例如在TF视角下，公式\eqref{eq:algebra-view}算子在MTTKRP的$l,k$维度做规约，TTM在$k$维度，SDDMM在$j$维度，SpMM在$j$维度做规约。规约可以再一个稀疏和一个稠密维度之间进行，比如MTTKRP，TTM和SpMM。
 规约也可以在两个稠密维度做，比如SDDMM。图~\ref{fig:kernels}展示了这四种算子的规约维度。本文也在图~\ref{fig:four-code}中给出了规约的具体代码例子。例如，MTTKRP包含两个规约，每个规约都和SpMM中的
@@ -87,7 +87,7 @@ $\oplus$的结果会被写入$Q$中的$f(dst)$位置。在DF视角下，稀疏�
 Ge-SpMM\cite{huang2020ge}提出了协调行快取技术（Coalesced Row Caching）来实现向稀疏和稠密矩阵的协调内存访问。同时提出了粗粒度线程组合并技术（Coarse-grained Warp Merging）去合并SpMM在不同线程组的工作负载，并实现更好的稀疏矩阵数据复用。Mehrabi等人\cite{mehrabi2021learning}提出了针对CSR格式的行交换技术来实现更好的工作负载均衡和数据局部性。
 DA-SpMM\cite{dai2022heuristic}提出了SpMM的三个设计维度，分别是行/非零元均衡、行/列起始循环，并行/串行规约，并基于机器学习算法设计了自动算子选择器。
 
-\section{稀疏算子编译器}
+\section{稀疏算子编译器}\label{sec:spcomp}
 优化稀疏张量代数有四个维度的复杂度：数据格式、代数表达、优化技巧和硬件平台。如前所述，常见数据格式有CSR，CSF，COO，DIA，DCSR，CSB，CSC等，不仅如此，用户还可以根据问题自定义数据格式。
 代数表达方面，除了已经列举的SpMM，SDDMM，MTTKRP，TTM等还有更多用爱因斯坦和\cite{einsteinsum}形式表达的张量运算。优化技巧方面，在~\ref{sec:spmmopt}节中本文列举了SpMM的常见优化技巧，
 针对其他稀疏算子也会有各自的优化技巧。硬件平台除了CPU，GPU，还会有FPGA和其他的领域专用电路（ASIC）等。通常研究者们会针对一个数据格式、一种张量计算和一个硬件平台开发一系列优化算法。这种研究方式

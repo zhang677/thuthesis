@@ -5,7 +5,7 @@
   cite-style = super,
 }
 
-\section{灵活规约定义}
+\section{灵活规约定义}\label{sec:flexible-reduciton}
 规约是稀疏稠密混合张量代数的核心操作。规约的数学定义如式\eqref{eq:reduction}。其中$x \in X$，每个$x$有两个参数，一个是$id\in ID$，另一个是$val$。其中$id$是可以哈希的键值，$val$是可以被运算符$\oplus$运算的值。
 $X$是由$x$组成的列表，$Out$是输出列表，由$ID$索引。
 
@@ -45,7 +45,7 @@ GPU提供了多种规约方式，写回线程表示该线程的寄存器中存�
 图~\ref{fig:space3d}展示了SpMM的优化空间。但是，基于原子并行和规约并行构建的优化空间中不是所有点都合法。图~\ref{fig:space}中展示了空间剪枝的细节。优化空间中合法的点有3个条件：
 \begin{enumerate}
   \item $\{<\frac{1}{g}\,nnz , x\,col>,r\}$, $\{<x\,nnz , \frac{1}{c}\,col>,r\}$ 
-  是合法的，因为一个非零元一定与稠密矩阵中的一个点相乘。
+  是非法的，因为一个非零元一定与稠密矩阵中的一个点相乘。
   \item $\{<\frac{1}{g}\,row, x\,col>,r\}(\frac{r}{g}<1)$
   是非法的，因为整体规约只能有一个写回线程。
   \item $\{<\frac{1}{g}\,row , \frac{1}{c}\,col>,r\}$
@@ -75,7 +75,7 @@ RB+SR是$\{<1\,row,c\,col >,1\}$。其中$c$对应DA-SpMM中的向量化参数�
 
 
 \section{实验结果}
-\subsection{实验环境}
+\subsection{实验环境}\label{sec:exp-env}
 本节在Turing（图灵），Volta（伏打）和Ampere（安培）三代GPU架构上进行算子性能测试，该三种架构分别对应RTX 2080，Tesla V100和RTX 3090：
 \begin{itemize}
 \item NVIDIA RTX 3090. Compute Capability 8.6 (68 Ampere SMs at 1.395 GHz, 24 GB GDDR6x, 936 GB/s bandwidth).
@@ -323,7 +323,7 @@ EB+PR+RM在原子并行中表示为$\{<g\,nnz , c\,col>,r\}$。
   \label{tab:sta-ori-rb}
 \end{table}
 
-\subsection{动态调优与官方算子库对比}
+\subsection{动态调优与官方算子库对比}\label{sec:overcu}
 本节对比灵活规约扩展后的优化空间和官方闭源算子库的性能。优势矩阵表示灵活规约扩展比官方算子库吞吐率低的算子的稀疏矩阵。从~\ref{tab:dy-cusp-eb}中可以看到当稠密矩阵列数增大时，优势矩阵个数减少，平均相对性能也更低，这说明$\{<g\,nnz , c\,col>,r\}$数据流更适用于稠密矩阵列数小于64的情况。
 从~\ref{tab:dy-cusp-rb}中可以发现，同样地当稠密矩阵列数增大时，优势矩阵个数减少，平均相对性能也更低。
 \begin{table}
