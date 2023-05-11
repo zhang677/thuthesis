@@ -3,37 +3,37 @@
 % 中英文摘要和关键字
 
 \begin{abstract}
-  论文的摘要是对论文研究内容和成果的高度概括。
-  摘要应对论文所研究的问题及其研究目的进行描述，对研究方法和过程进行简单介绍，对研究成果和所得结论进行概括。
-  摘要应具有独立性和自明性，其内容应包含与论文全文同等量的主要信息。
-  使读者即使不阅读全文，通过摘要就能了解论文的总体内容和主要成果。
+  本文依照优化技术归纳、同类算子演绎和编译算法设计的思路展示了针对稀疏稠密混合代数在单指令多线程架构上灵活规约优化空间扩展的编译算法设计，在算子性能、优化技术泛化性和开发效率方面取得了提升，并为更广泛的通用稀疏张量计算编译算法设计提出了可行的研究方法。
+  
+  稀疏张量是指大部分元素为零的张量。稀疏稠密混合代数指作用在一个稀疏张量和至少一个稠密张量上的张量代数。该种代数被广泛应用在图神经网络，稀疏神经网络，数据分析和高性能计算中。
+  但稀疏稠密混合代数在单指令多线程架构上优化仍不充分，而且开发难度较高。
 
-  论文摘要的书写应力求精确、简明。
-  切忌写成对论文书写内容进行提要的形式，尤其要避免“第 1 章……；第 2 章……；……”这种或类似的陈述方式。
-
-  关键词是为了文献标引工作、用以表示全文主要内容信息的单词或术语。
-  关键词不超过 5 个，每个关键词中间用分号分隔。
-
+  针对这两个问题，本文提出了灵活规约优化技术和灵活规约语义提升技术。
+  灵活规约包含灵活规约粒度和规约策略，该技术扩展了当前的稀疏稠密混合代数优化空间，同时在原理上可以将性能提升泛化至所有稀疏稠密混合代数。在稀疏稠密矩阵向量乘算子上灵活规约取得了比最优开源算子库1.6到2.7倍性能提升。
+  基于扩展后的优化空间，本文将灵活规约纳入稀疏迭代模型，并提出灵活规约语义提升技术，该技术使得用户可以通过简单调度指令针对任意稀疏稠密混合代数进行灵活规约扩展优化空间的性能调优。该技术将原有稀疏算子编译器生成的稀疏稠密矩阵向量乘算子性能提升最高1.2倍，矩阵或张量乘Khatri-Rao积算子最高提升2.7倍。
+  
   % 关键词用“英文逗号”分隔，输出时会自动处理为正确的分隔符
   \thusetup{
-    keywords = {关键词 1, 关键词 2, 关键词 3, 关键词 4, 关键词 5},
+    keywords = {稀疏张量代数, 编译器, 高性能算子, 单指令多线程架构},
   }
 \end{abstract}
 
 \begin{abstract*}
-  An abstract of a dissertation is a summary and extraction of research work and contributions.
-  Included in an abstract should be description of research topic and research objective, brief introduction to methodology and research process, and summary of conclusion and contributions of the research.
-  An abstract should be characterized by independence and clarity and carry identical information with the dissertation.
-  It should be such that the general idea and major contributions of the dissertation are conveyed without reading the dissertation.
+  This paper proposes flexible reduction to expand the optimization space of sparse dense hybrid algebra kernels on SIMT architecture,
+   and proposes a compilation algorithm to utilize flexible reduction in sparse compilers. These techniques improve the performance of 
+   sparse dense hybrid algebra kernels and the efficiency of development and performance tuning. This paper first concludes the optimization technique from specific kernels, then generalizes it to other kernels, and finally designs 
+   a compilation algorithm to tune kernel performance efficiently. Such research method can be generalized to the compilation algorithm design for general sparse tensor algebra.
 
-  An abstract should be concise and to the point.
-  It is a misunderstanding to make an abstract an outline of the dissertation and words “the first chapter”, “the second chapter” and the like should be avoided in the abstract.
+  Sparse tensors are tensors whose elements are most zero. Sparse dense hybrid tensor algebra exerts on a sparse tensor and at least on dense tensor. 
+  Sparse dense hybrid tensor algebra are widely used in graph neural networks, sparse neural networks, data analysis, and high-performance computing. 
+  However, the optimization of such algebra on SIMT architecture is still insufficient, and the generalization and performance tuning cost is too high.
 
-  Keywords are terms used in a dissertation for indexing, reflecting core information of the dissertation.
-  An abstract may contain a maximum of 5 keywords, with semi-colons used in between to separate one another.
-
+  To solve these two challenges, this paper proposes flexible reduction optimization and compilation algorithm. Flexible reduction is composed of flexible granularity and flexible strategy. 
+  This technique expands the optimization space of sparse dense hybrid tensor algebra, and in theory is applicable to any sparse dense hybrid tensor algebra. It improves the performance
+  of state-of-the-art SpMM library by $1.6 \sim 2.7$. Based on the expanded optimization space, this paper includes flexible reduction to the sparse iteration model and proposes the semantic elevation technique.
+  Such technique enables users to tune the performance of flexible reduciton on any sparse dense hybrid tensor algebra using simple schedule language. Equipped with this technique, the sparse compiler can generate SpMM kernels up to 1.2 times faster and MTTKRP kernels up to 2.7 times faster.
   % Use comma as separator when inputting
   \thusetup{
-    keywords* = {keyword 1, keyword 2, keyword 3, keyword 4, keyword 5},
+    keywords* = {Sparse tensor algebra, Compiler, High performance kernel, SIMT},
   }
 \end{abstract*}

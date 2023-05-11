@@ -17,10 +17,10 @@
 
 \section{稀疏稠密混合代数}
 \subsection{定义}
-稀疏稠密混合代数是一种稀疏张量代数，它有两种等价的表示形式：一种是张量形式（Tensor formulation，简称TF）如公式\eqref{eq:algebra-view}所示，另一种是数据库形式（Database formulation，简称DF）如公式\eqref{eq:db-view}所示。
-在公式\eqref{eq:algebra-view}中，$\symbf{Y}$是输出张量，$\symbf{X^j}$是稠密输入张量，$symbf{A}$是稀疏输入张量。$symbf{A}$是稀疏的意味着至少有一个维度$a_i$是以压缩格式存储的。$y_1, y_2,\cdots,y_M$,$a_1, a_2,\cdots,a_N$,$x_1^j,x_2^j,\cdots,x_{M^j}^j$是属于相同的下标变量集合。$M$是输出张量的维度，$N$是输入稀疏张量的维度，$D$是输入稠密张量的个数，$M^j$是输入稠密张量$\symbf{X^j}$的维度。
-在公式\eqref{eq:db-view}中本文使用信息传播描述描述稀疏稠密混合代数。$Q,Q_0,Q_1,Q_2$是向关联数据库的查询。
-本文遵循经典的逻辑-物理分离存储思想\cite{codd1970relational}。$D$是$Q$的关联数据库，
+稀疏稠密混合代数是一种稀疏张量代数，它有两种等价的表示形式：一种是张量形式（Tensor formulation，简称TF）如公式\eqref{eq:algebra-view}所示，另一种是表形式（Database formulation，简称DF）如公式\eqref{eq:db-view}所示。
+在公式\eqref{eq:algebra-view}中，$\symbf{Y}$是输出张量，$\symbf{X^j}$是稠密输入张量，$\symbf{A}$是稀疏输入张量。$\symbf{A}$是稀疏的意味着至少有一个维度$a_i$是以压缩格式存储的。$y_1, y_2,\cdots,y_M$,$a_1, a_2,\cdots,a_N$,$x_1^j,x_2^j,\cdots,x_{M^j}^j$是属于相同的下标变量集合。$M$是输出张量的维度，$N$是输入稀疏张量的维度，$D$是输入稠密张量的个数，$M^j$是输入稠密张量$\symbf{X^j}$的维度。
+在公式\eqref{eq:db-view}中本文使用信息传播描述描述稀疏稠密混合代数。$Q,Q_0,Q_1,Q_2$是向关联表的查询。
+本文遵循经典的逻辑-物理分离存储思想\cite{codd1970relational}。$D$是$Q$的关联表，
 按照$id$升序存储$(id, value)$，其中$id\in \mathbb{Z}$，$value \in \mathbb{R}^n$。$dst\in K$是任何可以哈希的键值，$f$是$K\rightarrow \mathbb{Z}$的映射。
 $Q(k)$的值定义为$Q(dst)=D(f(dst))$。$\oplus$可以是任何满足交换律的算符，$\otimes$可以是任何可以接受两个对象作为输入，输出一个可被$\oplus$运算的对象。
 $\oplus$的结果会被写入$Q$中的$f(dst)$位置。在DF视角下，稀疏稠密混合代数的稀疏性体现在对于所有$dst$，$Q_0(dst)$是分散的。换句话说，$Q_0(i) \bigcap Q_0(i+1) \sim \O$。
