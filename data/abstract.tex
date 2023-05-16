@@ -9,8 +9,8 @@
   但稀疏稠密混合代数在单指令多线程架构上优化仍不充分，而且开发难度较高。
 
   针对这两个问题，本文提出了灵活规约优化技术和灵活规约语义提升技术。
-  灵活规约包含灵活规约粒度和规约策略，该技术扩展了当前的稀疏稠密混合代数优化空间，同时在原理上可以将性能提升泛化至所有稀疏稠密混合代数。在稀疏稠密矩阵向量乘算子上灵活规约取得了比最优开源算子库1.6到2.7倍性能提升。
-  基于扩展后的优化空间，本文将灵活规约纳入稀疏迭代模型，并提出灵活规约语义提升技术，该技术使得用户可以通过简单调度指令针对任意稀疏稠密混合代数进行灵活规约扩展优化空间的性能调优。该技术将原有稀疏算子编译器生成的稀疏稠密矩阵向量乘算子性能提升最高1.2倍，矩阵或张量乘Khatri-Rao积算子最高提升2.7倍。
+  灵活规约优化技术包含灵活规约粒度和规约策略，该技术扩展了当前的稀疏稠密混合代数优化空间，同时在原理上可以将性能提升泛化至所有稀疏稠密混合代数。在稀疏稠密矩阵向量乘算子上灵活规约取得了比最优开源算子库平均1.6到2.7倍性能提升。
+  基于扩展后的优化空间，本文将灵活规约纳入稀疏迭代模型，并提出灵活规约语义提升技术，该技术使得用户可以通过简单调度指令针对任意稀疏稠密混合代数进行灵活规约扩展优化空间的性能调优。该技术将原有稀疏算子编译器生成的稀疏稠密矩阵向量乘算子性能平均提升1.2倍，最多提升3.8倍；矩阵化张量乘Khatri-Rao积算子最高提升2.7倍。
   
   % 关键词用“英文逗号”分隔，输出时会自动处理为正确的分隔符
   \thusetup{
@@ -19,19 +19,19 @@
 \end{abstract}
 
 \begin{abstract*}
-  This paper proposes flexible reduction to expand the optimization space of sparse dense hybrid algebra kernels on SIMT architecture,
-   and proposes a compilation algorithm to utilize flexible reduction in sparse compilers. These techniques improve the performance of 
-   sparse dense hybrid algebra kernels and the efficiency of development and performance tuning. This paper first concludes the optimization technique from specific kernels, then generalizes it to other kernels, and finally designs 
-   a compilation algorithm to tune kernel performance efficiently. Such research method can be generalized to the compilation algorithm design for general sparse tensor algebra.
+  This paper proposes flexible reduction to expand the optimization space of sparse-dense hybrid algebra kernels on SIMT architecture.
+  Furthermore, it proposes a compilation algorithm to utilize flexible reduction in sparse compilers. These techniques improve the performance of 
+  sparse-dense hybrid algebra kernels and the efficiency of development and performance tuning. This paper concludes the optimization technique from specific kernels, then generalizes it to other kernels, and finally designs 
+  a compilation algorithm to tune kernel performance efficiently. Such research method can be generalized to the compilation algorithm design for general sparse tensor algebra.
 
-  Sparse tensors are tensors whose elements are most zero. Sparse dense hybrid tensor algebra exerts on a sparse tensor and at least on dense tensor. 
-  Sparse dense hybrid tensor algebra are widely used in graph neural networks, sparse neural networks, data analysis, and high-performance computing. 
+  Sparse tensors are tensors whose elements are mostly zero. Sparse-dense hybrid algebra exerts on a sparse tensor and at least one dense tensor. 
+  Sparse-dense hybrid algebra is widely used in graph neural networks, sparse neural networks, data analysis, and high-performance computing. 
   However, the optimization of such algebra on SIMT architecture is still insufficient, and the generalization and performance tuning cost is too high.
 
   To solve these two challenges, this paper proposes flexible reduction optimization and compilation algorithm. Flexible reduction is composed of flexible granularity and flexible strategy. 
   This technique expands the optimization space of sparse dense hybrid tensor algebra, and in theory is applicable to any sparse dense hybrid tensor algebra. It improves the performance
-  of state-of-the-art SpMM library by $1.6 \sim 2.7$. Based on the expanded optimization space, this paper includes flexible reduction to the sparse iteration model and proposes the semantic elevation technique.
-  Such technique enables users to tune the performance of flexible reduciton on any sparse dense hybrid tensor algebra using simple schedule language. Equipped with this technique, the sparse compiler can generate SpMM kernels up to 1.2 times faster and MTTKRP kernels up to 2.7 times faster.
+  of the state-of-the-art SpMM library by $1.6x \sim 2.7x$ on average. Based on the expanded optimization space, this paper includes flexible reduction to the sparse iteration model and proposes the semantic elevation technique.
+  Such a technique enables users to tune the performance of flexible reduction on any sparse-dense hybrid algebra using simple schedule language. Equipped with this technique, the sparse compiler can generate SpMM kernels up to 3.8x (1.2x on average) faster and MTTKRP kernels up to 2.7 times faster.
   % Use comma as separator when inputting
   \thusetup{
     keywords* = {Sparse tensor algebra, Compiler, High performance kernel, SIMT},
