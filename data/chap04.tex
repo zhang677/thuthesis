@@ -118,47 +118,9 @@ EB+PR+RM在原子并行中表示为$\{<g\,nnz , c\,col>,r\}$。
 \subsection{动态调优与开源算子库对比}\label{sec:overori}
 因为DA-SpMM中介绍了一种决策树模型来针对一个给定的稀疏矩阵选择最好的参数配置，因此我们研究决策树的性能上限，即测试所有参数配置得到各个参数配置下的结果后，取最好的结果作为该算子的性能。这种测试方法称之为动态调优。比如，在$\{<g\,nnz , c\,col>,r\}$中，给定稠密矩阵列数和稀疏矩阵，测试了~\ref{sec:exp}节中提到的所有$g$，$c$，和$r$后，
 选择最佳的性能，作为该稀疏算子在该稠密矩阵列数下的性能。这个实验目的是测试灵活规约优化空间扩展对算子库带来的性能提升，并研究设计一个动态模型在算子执行前自动选择最佳参数的必要性。
-\begin{table}
-  \centering
-  \caption{$\{<\frac{1}{g}\,row , c\,col>,r\}$算法相对于开源算子库的子集实现$\{<\frac{1}{32}\,row , c\,col>,32\}$的吞吐率提升比}
-  \begin{tabular}{lllll}
-  \toprule
-  硬件平台 & 几何平均值  & 最大值 & 稠密矩阵列数 \\
-  \midrule
-  \multirow{4}{*}{RTX 3090}& 2.295   & 4.316  & 128\\
-                          & 2.181   & 4.432  & 64\\
-                          & 1.997   & 4.271  & 16\\
-                          & 2.046   & 7.819  & 4\\
-  \hline
-  \multirow{4}{*}{RTX 2080}& 1.938   & 4.379  & 128\\
-                          & 1.927   & 4.430  & 64\\
-                          & 1.995   & 5.019  & 16\\
-                          & 2.307   & 8.582  & 4\\
-  \hline
-  \multirow{4}{*}{Tesla V100}   & 1.874   & 3.724  & 128\\
-                          & 1.824   & 3.846  & 64\\
-                          & 1.693   & 3.388  & 16\\
-                          & 1.852   & 6.114  & 4\\
-  \bottomrule
-  \end{tabular}
-  \label{tab:over-ori-rb}%
-\end{table}
-\begin{table}
-  \centering
-  \caption{$\{<\frac{1}{g}\,row , c\,col>,r\}$算法动态调优与开源算子库吞吐率提升比针对不同代GPU的波动情况}
-  \begin{tabular}{llllll}
-  \toprule
-  稠密矩阵列数 & RTX 3090 & RTX 2080   & Tesla V100 & 最大波动比率 \\
-    & RTX 2080 & Tesla V100 & RTX 3090   &  \\
-  \midrule
-  128 & 0.18 & 0.03 & 0.22 & 0.22 \\
-  64  & 0.13 & 0.06 & 0.20 & 0.20 \\
-  16  & 0.001 & 0.18 & 0.18 & 0.18 \\
-  4   & 0.13 & 0.25 & 0.11 & 0.25 \\
-  \bottomrule
-  \end{tabular}
-  \label{tab:hw-rb}
-\end{table}
+从表~\ref{tab:over-ori-eb}可以看出，针对$\{<g\,nnz , c\,col>,r\}$算法，随着稠密矩阵列数增大，平均计算速度提升比越大，说明性能调优的收益越大。
+从表~\ref{tab:hw-eb}可以看出，在不同平台上的计算速度提升比相对差值在22\%以内，差别不大，说明灵活规约优化空间扩展在SIMT架构上具有适应性，而不局限在特定代的GPU架构。
+
 \begin{table}
   \centering
   \caption{$\{<g\,nnz , c\,col>,r\}$算法相对于开源算子库的子集实现$\{<1\,nnz , c\,col>,32\}$的吞吐率提升比}
@@ -189,8 +151,7 @@ EB+PR+RM在原子并行中表示为$\{<g\,nnz , c\,col>,r\}$。
   \caption{$\{<g\,nnz , c\,col>,r\}$算法动态调优与开源算子库吞吐率提升比针对不同代GPU的波动情况}
   \begin{tabular}{llllll}
   \toprule
-  稠密矩阵列数 & RTX 3090 & RTX 2080   & Tesla V100 & 最大波动比率 \\
-    & RTX 2080 & Tesla V100 & RTX 3090   &  \\
+  稠密矩阵列数 & $\frac{RTX\,3090}{RTX\,2080}$ & $\frac{RTX\,2080}{Tesla\,V100}$  & $\frac{Tesla\,V100}{RTX\,3090}$  & 最大波动比率 \\
   \midrule
   128 & 0.20 & 0.21 & 0.01 & 0.21 \\
   64  & 0.18 & 0.19 & 0.01 & 0.19 \\
@@ -200,20 +161,54 @@ EB+PR+RM在原子并行中表示为$\{<g\,nnz , c\,col>,r\}$。
   \end{tabular}
   \label{tab:hw-eb}
 \end{table}
-从表~\ref{tab:over-ori-eb}可以看出，针对$\{<g\,nnz , c\,col>,r\}$算法，随着稠密矩阵列数增大，平均计算速度提升比越大，说明性能调优的收益越大。
-从表~\ref{tab:hw-eb}可以看出，在不同平台上的计算速度提升比相对差值在22\%以内，差别不大，说明灵活规约优化空间扩展在SIMT架构上具有适应性，而不局限在特定代的GPU架构。
 从表~\ref{tab:over-ori-rb}可以看出，针对$\{<\frac{1}{g}\,row , c\,col>,r\}$算法，随着稠密矩阵列数增大，平均计算速度提升比不一定越大。
 从表~\ref{tab:hw-rb}可以看出，在不同平台上的计算速度提升比相对差值在26\%以内，较$\{<g\,nnz , c\,col>,r\}$算法相对波动大。
+\begin{table}
+  \centering
+  \caption{$\{<\frac{1}{g}\,row , c\,col>,r\}$算法相对于开源算子库的子集实现$\{<\frac{1}{32}\,row , c\,col>,32\}$的吞吐率提升比}
+  \begin{tabular}{lllll}
+  \toprule
+  硬件平台 & 几何平均值  & 最大值 & 稠密矩阵列数 \\
+  \midrule
+  \multirow{4}{*}{RTX 3090}& 2.295   & 4.316  & 128\\
+                          & 2.181   & 4.432  & 64\\
+                          & 1.997   & 4.271  & 16\\
+                          & 2.046   & 7.819  & 4\\
+  \hline
+  \multirow{4}{*}{RTX 2080}& 1.938   & 4.379  & 128\\
+                          & 1.927   & 4.430  & 64\\
+                          & 1.995   & 5.019  & 16\\
+                          & 2.307   & 8.582  & 4\\
+  \hline
+  \multirow{4}{*}{Tesla V100}   & 1.874   & 3.724  & 128\\
+                          & 1.824   & 3.846  & 64\\
+                          & 1.693   & 3.388  & 16\\
+                          & 1.852   & 6.114  & 4\\
+  \bottomrule
+  \end{tabular}
+  \label{tab:over-ori-rb}%
+\end{table}
+\begin{table}
+  \centering
+  \caption{$\{<\frac{1}{g}\,row , c\,col>,r\}$算法动态调优与开源算子库吞吐率提升比针对不同代GPU的波动情况}
+  \begin{tabular}{llllll}
+  \toprule
+  稠密矩阵列数 & $\frac{RTX\,3090}{RTX\,2080}$ & $\frac{RTX\,2080}{Tesla\,V100}$  & $\frac{Tesla\,V100}{RTX\,3090}$  & 最大波动比率 \\
+  \midrule
+  128 & 0.18 & 0.03 & 0.22 & 0.22 \\
+  64  & 0.13 & 0.06 & 0.20 & 0.20 \\
+  16  & 0.001 & 0.18 & 0.18 & 0.18 \\
+  4   & 0.13 & 0.25 & 0.11 & 0.25 \\
+  \bottomrule
+  \end{tabular}
+  \label{tab:hw-rb}
+\end{table}
+
+
 \subsection{动态调优和静态选择对比}\label{sec:dystd}
 ~\ref{sec:overori}节说明了动态调优可以带来性能提升，在$\{<g\,nnz , c\,col>,r\}$上可以提升1.04到1.49倍，在$\{<\frac{1}{g}\,row , c\,col>,r\}$上可以提升
 1.693到2.295倍。但是，这些证据还不足以支持使用动态调优。因为可能存在一个或几个参数配置始终性能很好。因此本节测试静态选择和动态调优的性能对比。静态选择指采用一种参数配置。
 最佳静态配置指，采用该种配置后，与其他配置相比，在所有测试稀疏矩阵上，动态调优与之相比性能提升最小。
-表~\ref{tab:over-sta-eb}中最佳静态配置的括号中4个参数分别指\textit{groupSz}，\textit{blockSz}，\textit{tileSz}，$\frac{workerDimNnz}{rows}$其中\textit{rows}是稀疏矩阵行数。
-从中可以看到，$\{<g\,nnz , c\,col>,r\}$的优化空间中性能较高的点几乎集中在(32, 256, 32, 1/32)，这与DA-SpMM的(32, 256, 32, 1)只在总并行度有区别。因此针对这种工作负载，DA-SpMM的配置距离
-经过灵活规约扩展后的空间中最优点很近。这说明非零元均衡可以较好平衡负载，因此最小数据和规约并行度一致时性能较好，且规约并行度越大性能越好。32是GPU提供的最大线程组规约并行度。
-表~\ref{tab:over-sta-rb}中最佳静态配置的括号中4个参数分别指\textit{groupSz}，\textit{blockSz}，\textit{tileSz}，$\frac{workerDimR}{rows}$。
-从中可以看到，$\{<\frac{1}{g}\,row , c\,col>,r\}$的优化空间性质和$\{<g\,nnz , c\,col>,r\}$不同，规约并行度为8更适合这种算法。因为每行非零元分布不一致，所以行均衡不易做到每个并行单元负载均衡，
-因此不能保证规约并行度越大性能越好。规约并行度过大会造成过多无效规约路径，降低线程利用率。规约并行度过小会造成程序并行度低，并导致对GPU并行度利用率不足，也会损害算子性能。
 \begin{table}
   \centering
   \caption{$\{<g\,nnz , c\,col>,r\}$算法动态调优和静态选择吞吐率对比}
@@ -243,6 +238,9 @@ EB+PR+RM在原子并行中表示为$\{<g\,nnz , c\,col>,r\}$。
   \end{tabular}
   \label{tab:over-sta-eb}
 \end{table}
+表~\ref{tab:over-sta-eb}中最佳静态配置的括号中4个参数分别指\textit{groupSz}，\textit{blockSz}，\textit{tileSz}，$\frac{workerDimNnz}{rows}$其中\textit{rows}是稀疏矩阵行数。
+从中可以看到，$\{<g\,nnz , c\,col>,r\}$的优化空间中性能较高的点几乎集中在(32, 256, 32, 1/32)，这与DA-SpMM的(32, 256, 32, 1)只在总并行度有区别。因此针对这种工作负载，DA-SpMM的配置距离
+经过灵活规约扩展后的空间中最优点很近。这说明非零元均衡可以较好平衡负载，因此最小数据和规约并行度一致时性能较好，且规约并行度越大性能越好。32是GPU提供的最大线程组规约并行度。
 \begin{table}
   \centering
   \caption{$\{<\frac{1}{g}\,row , c\,col>,r\}$算法动态调优和静态选择吞吐率对比}
@@ -268,10 +266,15 @@ EB+PR+RM在原子并行中表示为$\{<g\,nnz , c\,col>,r\}$。
   \end{tabular}
   \label{tab:over-sta-rb}
 \end{table}
+表~\ref{tab:over-sta-rb}中最佳静态配置的括号中4个参数分别指\textit{groupSz}，\textit{blockSz}，\textit{tileSz}，$\frac{workerDimR}{rows}$。
+从中可以看到，$\{<\frac{1}{g}\,row , c\,col>,r\}$的优化空间性质和$\{<g\,nnz , c\,col>,r\}$不同，规约并行度为8更适合这种算法。因为每行非零元分布不一致，所以行均衡不易做到每个并行单元负载均衡，
+因此不能保证规约并行度越大性能越好。规约并行度过大会造成过多无效规约路径，降低线程利用率。规约并行度过小会造成程序并行度低，并导致对GPU并行度利用率不足，也会损害算子性能。
+
+
 \subsection{静态选择与开源算子库对比}
 本节探究静态选择与开源算子库的性能比较。~\ref{sec:overori}节探究了动态调优对开源算子库的性能提升，说明了灵活规约优化空间扩展的有效性；~\ref{sec:dystd}节探究了动态调优对静态选择的性能提升，衡量了添加动态选择模型的必要性，但是二者的结果还不足以衡量实际应用时灵活规约带来的性能收益。
-因为在DA-SpMM的开源库中没有动态选择模型，所以本节希望测试用静态选择的最佳参数配置直接替换开源算子库中对应算子，观测性能提升。从表~\ref{tab:sta-ori-eb}中可以看出$\{<g\,nnz , c\,col>,r\}$直接用静态选择替换EB+PR+RM算子，可以给算子库平均带来1.090到1.463倍的性能提升；从表~\ref{tab:sta-ori-rb}
-中可以看出$\{<\frac{1}{g}\,row , c\,col>,r\}$直接用静态选择替换RB+PR+RM算子，可以给算子库带来平均1.238到2.042倍的性能提升。
+因为在DA-SpMM的开源库中没有动态选择模型，所以本节希望测试用静态选择的最佳参数配置直接替换开源算子库中对应算子，观测性能提升。
+从表~\ref{tab:sta-ori-eb}中可以看出$\{<g\,nnz , c\,col>,r\}$直接用静态选择替换EB+PR+RM算子，可以给算子库平均带来1.090到1.463倍的性能提升。
 \begin{table}
   \centering
   \caption{$\{<g\,nnz , c\,col>,r\}$算法静态选择和开源算子库吞吐率对比}
@@ -301,6 +304,7 @@ EB+PR+RM在原子并行中表示为$\{<g\,nnz , c\,col>,r\}$。
   \end{tabular}
   \label{tab:sta-ori-eb}
 \end{table}
+从表~\ref{tab:sta-ori-rb}中可以看出$\{<\frac{1}{g}\,row , c\,col>,r\}$直接用静态选择替换RB+PR+RM算子，可以给算子库带来平均1.238到2.042倍的性能提升。
 \begin{table}
   \centering
   \caption{$\{<\frac{1}{g}\,row , c\,col>,r\}$算法静态选择和和开源算子库吞吐率对比}
@@ -329,7 +333,7 @@ EB+PR+RM在原子并行中表示为$\{<g\,nnz , c\,col>,r\}$。
 
 \subsection{动态调优与官方算子库对比}\label{sec:overcu}
 本节对比灵活规约扩展后的优化空间和官方闭源算子库的性能。优势矩阵表示灵活规约扩展比官方算子库吞吐率低的算子的稀疏矩阵。从表~\ref{tab:dy-cusp-eb}中可以看到当稠密矩阵列数增大时，优势矩阵个数减少，平均相对性能也更低，这说明$\{<g\,nnz , c\,col>,r\}$数据流更适用于稠密矩阵列数小于64的情况。
-从表~\ref{tab:dy-cusp-rb}中可以发现，同样地当稠密矩阵列数增大时，优势矩阵个数减少，平均相对性能也更低。从表~\ref{tab:dy-cusp-eb-sr}可以发现，规约并行度是1时，灵活规约扩展优化空间也可相比算子库取得1.343到3.341倍的加速。
+从表~\ref{tab:dy-cusp-rb}中可以发现，同样地当稠密矩阵列数增大时，优势矩阵个数减少，平均相对性能也更低。
 \begin{table}
   \centering
   \caption{$\{<g\,nnz , c\,col>,r\}$算法动态调优和和官方算子库吞吐率对比}
@@ -355,6 +359,7 @@ EB+PR+RM在原子并行中表示为$\{<g\,nnz , c\,col>,r\}$。
   \end{tabular}
   \label{tab:dy-cusp-eb}
 \end{table}
+从表~\ref{tab:dy-cusp-eb-sr}可以发现，规约并行度是1时，灵活规约扩展优化空间也可相比算子库取得1.343到3.341倍的加速。
 \begin{table}
   \centering
   \caption{$\{<\frac{1}{g}\,row , c\,col>,r\}$算法静态选择和和官方算子库对比}
