@@ -20,18 +20,17 @@
 再比如以及记录亚马逊网站截至2013年3月的横跨18年的用户数据的三维张量中，每一个非零元素对应近80亿个零元\cite{mcauley2013hidden}。
 随着稀疏性在神经网络的广泛应用\cite{xiao2022smoothquant}，以及现实生活中关系数据的日益增长，需要研究更高效的稀疏张量运算。
 
-稀疏计算在系统中处于算子层面。如图~\ref{fig:kernel-def}所示，算子的功能是连接算法和硬件，是高效计算系统的核心。因此，稀疏计算的优化核心是稀疏算子。
+稀疏计算在系统中处于算子层面。如图~\ref{fig:kernel-def}所示，算子的功能是连接算法和硬件  \footnote{以Transformer算法\cite{vaswani2017transformer}为例介绍算子在计算系统中的位置。词嵌入和注意力是Transformer算法的基础模块。Tranformer算法主体是重复的注意力模块。注意力模块通过张量代数描述可以转化为多个算子的运算组合。这种组合可以用有向无环图表示，其中边代表数据，点代表算子。
+图中~\ref{fig:kernel-def}点的不同花纹代表不同算子，不同颜色代表属于不同算子库。硬件厂商会提供以张量代数描述定义的算子库。每个算子库包含一类算子，完成提前定义的张量代数运算。比如图中cuBLAS\cite{cuBLAS}是英伟达GPU的线性代数算子库，cuSPARSE\cite{naumov2010cusparse}是英伟达GPU的稀疏线性代数算子库。系统在实际运行时，会根据算法模块需求通过链接技术调用算子库中的对应算子。}，是高效计算系统的核心。因此，稀疏计算的优化核心是稀疏算子。
 \begin{figure}
   \centering
   \includegraphics[width=0.9\linewidth]{kernel-def.pdf}
   \caption{算子在计算系统的位置}
-  \caption*{以Transformer算法\cite{vaswani2017transformer}为例介绍算子在计算系统中的位置。词嵌入和注意力是Transformer算法的基础模块。Tranformer算法主体是重复的注意力模块。注意力模块通过张量代数描述可以转化为多个算子的运算组合。这种组合可以用有向无环图表示，其中边代表数据，点代表算子。
-  图中点的不同花纹代表不同算子，不同颜色代表属于不同算子库。硬件厂商会提供以张量代数描述定义的算子库。每个算子库包含一类算子，完成提前定义的张量代数运算。比如图中cuBLAS\cite{cuBLAS}是英伟达GPU的线性代数算子库，cuSPARSE\cite{naumov2010cusparse}是英伟达GPU的稀疏线性代数算子库。系统在实际运行时，会根据算法模块需求通过链接技术调用算子库中的对应算子。}
   \label{fig:kernel-def}
 \end{figure}
 然而，稀疏算子在优化技术和开发成本上仍面临挑战。一方面，由于稀疏计算的不规则性，在当前主流并行计算平台上的高效算法的研究仍不充分。另一方面，由于稀疏计算在代数表达和优化技巧方面的多样性，当前稀疏算子库模式开发成本过高。
 
-虽然GPU提供了10TFLOP/s量级的并行计算能力，但是由于稀疏张量计算的不规则性，充分利用GPU的并行计算能力仍具有挑战性。表\ref{tab:motivation-1}展示了SDDMM\cite{yu2021exploiting}，SpMM\cite{huang2020ge}，MTTKRP\cite{nisa2019mttkrp}，其中每种算子均采用当前性能最高的开源库。
+虽然GPU提供了10TFLOP/s量级的并行计算能力，但是由于稀疏张量计算的不规则性，充分利用GPU的并行计算能力仍具有挑战性。表\ref{tab:motivation-1}展示了采样稠密矩阵乘法SDDMM（Sampled Dense-Dense Matrix Multiplication）\cite{yu2021exploiting}，稀疏稠密矩阵乘法SpMM（Sparse Matrix-Matrix Multiplication）\cite{huang2020ge}，矩阵化张量乘Khatri-Rao积MTTKRP（Matricized Tensor Times Khatri Rao Product）\cite{nisa2019mttkrp}，其中每种算子均采用当前性能最高的开源库。
 \begin{table}
   \centering
   \caption{稀疏张量算子库性能和GPU峰值算力对比}
@@ -48,7 +47,7 @@
 \end{table}
 从表\ref{tab:motivation-1}中可以看出，最佳的开源稀疏张量算子库算子性能和平台峰值算力还有几十倍的差距，这说明计算平台的算力还没有被充分利用。因此主要挑战是如何进一步扩展优化空间，即写出更高效的稀疏张量算子。
 
-除了算子性能较低，现在编写高性能稀疏算子库也较为困难。这里用代码行数来衡量编写算子库的难易程度。表\ref{tab:motivation-2}展示了SDDMM，SpMM，MTTKRP最佳算子库和稀疏张量编译器TACO的对比。其中算子库代码行数指编写GPU上执行的CUDA算子需要的代码行数（不包括CPU和GPU间数据搬移和算子调用的代码），算子编译器代码行数指运用TACO提供的调度变换指令编写算子所需要的代码行数。
+除了算子性能较低，现在编写高性能稀疏算子库也较为困难。这里用代码行数来衡量编写算子库的难易程度。表\ref{tab:motivation-2}展示了SDDMM，SpMM，MTTKRP最佳算子库和稀疏张量编译器TACO~\cite{kjolstad:2017:taco}的对比。其中算子库代码行数指编写GPU上执行的CUDA算子需要的代码行数（不包括CPU和GPU间数据搬移和算子调用的代码），算子编译器代码行数指运用TACO提供的调度变换指令编写算子所需要的代码行数。
 \begin{table}
   \centering
   \begin{threeparttable}[c]
